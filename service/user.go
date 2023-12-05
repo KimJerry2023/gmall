@@ -10,20 +10,21 @@ import (
 	"gmall/repository/db/dao"
 	model2 "gmall/repository/db/model"
 	"gmall/serializer"
+	"mime/multipart"
 )
 
 // UserService 管理用户服务
 type UserService struct {
-	NickName string `form:"nick_name" json:"nick-name"`
+	NickName string `form:"nick_name" json:"nick_name"`
 	UserName string `form:"user_name" json:"user_name"`
 	Password string `form:"password" json:"password"`
 	Key      string `form:"key" json:"key"`
 }
 
-func (service UserService) Register(c context.Context) serializer.Response {
+func (service *UserService) Register(c context.Context) serializer.Response {
 	var user *model2.User
 	code := e.SUCCESS
-	if service.Key == "" || len(service.Key) != 16 {
+	if service.Key == "" || len(service.Key) != 12 {
 		code = e.ERROR
 		return serializer.Response{
 			Status: code,
@@ -119,5 +120,84 @@ func (service *UserService) Login(c context.Context) serializer.Response {
 		Status: code,
 		Data:   serializer.TokenData{User: serializer.BuildUser(user), Token: token},
 		Msg:    e.GetMsg(code),
+	}
+}
+
+// Post 更新用户头像
+func (service *UserService) Post(c context.Context, uId uint, file *multipart.FileHeader) serializer.Response {
+	code := e.SUCCESS
+	var user *model2.User
+	var err error
+	userDao := dao.NewUserDao(c)
+	user, err = userDao.GetUserById(uId)
+	if err != nil {
+		logging.Info(err)
+		code = e.ErrorDatabase
+		return serializer.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+			Error:  err.Error(),
+		}
+	}
+	path, err := utils.OssUpload(file)
+	if err != nil {
+		code = e.ErrorUploadFile
+		return serializer.Response{
+			Status: code,
+			Data:   e.GetMsg(code),
+			Error:  path,
+		}
+	}
+	user.Avatar = path
+	err = userDao.UpdateUserById(uId, user)
+	if err != nil {
+		logging.Info(err)
+		code = e.ErrorDatabase
+		return serializer.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+			Error:  err.Error(),
+		}
+	}
+	return serializer.Response{
+		Status: code,
+		Data:   serializer.BuildUser(user),
+		Msg:    e.GetMsg(code),
+	}
+}
+
+// Update 用户修改信息
+func (service *UserService) Update(c context.Context, uId uint) serializer.Response {
+	var user *model2.User
+	var err error
+	code := e.SUCCESS
+	// 找到用户
+	userDao := dao.NewUserDao(c)
+	user, err = userDao.GetUserById(uId)
+	if err != nil {
+		return ErrorResponse(err)
+	}
+	if service.NickName != "" {
+		user.NickName = service.NickName
+	}
+	err = userDao.UpdateUserById(uId, user)
+	if err != nil {
+		return ErrorResponse(err)
+	}
+	return serializer.Response{
+		Status: code,
+		Data:   serializer.BuildUser(user),
+		Msg:    e.GetMsg(code),
+	}
+}
+
+// ErrorResponse 错误响应
+func ErrorResponse(err error) serializer.Response {
+	logging.Info(err)
+	code := e.ErrorDatabase
+	return serializer.Response{
+		Status: code,
+		Msg:    e.GetMsg(code),
+		Error:  err.Error(),
 	}
 }

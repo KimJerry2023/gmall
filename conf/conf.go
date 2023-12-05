@@ -20,6 +20,11 @@ var (
 	PhotoHost        string
 	ProductPhotoPath string
 	AvatarPath       string
+
+	AccessKey string
+	SecretKey string
+	Bucket    string
+	Endpoint  string
 )
 
 func Init() {
@@ -30,6 +35,7 @@ func Init() {
 	}
 	LoadServer(file)
 	LoadMysqlData(file)
+	LoadAliyun(file)
 	if err := LoadLocales("conf/locales/zh-cn.yaml"); err != nil {
 		panic(err)
 	}
@@ -48,4 +54,11 @@ func LoadMysqlData(file *ini.File) {
 	DbUser = file.Section("mysql").Key("DbUser").String()
 	DbPassWord = file.Section("mysql").Key("DbPassword").String()
 	DbName = file.Section("mysql").Key("DbName").String()
+}
+
+func LoadAliyun(file *ini.File) {
+	AccessKey = file.Section("aliyun").Key("AccessKey").String()
+	SecretKey = file.Section("aliyun").Key("AccessSecret").String()
+	Bucket = file.Section("aliyun").Key("Bucket").String()
+	Endpoint = file.Section("aliyun").Key("Endpoint").String()
 }
