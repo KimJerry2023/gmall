@@ -2,6 +2,7 @@ package utils
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"gmall/conf"
@@ -85,6 +86,17 @@ func OssUpload(fileHeader *multipart.FileHeader) (string, error) {
 	defer fileHandle.Close()
 	// file 中没有单独列出扩展名，所以此处需要单独取一次
 	fileExt := path.Ext(fileHeader.Filename)
+	allowExts := []string{".jpg", ".png", ".gif", ".jpeg"}
+	allowFlag := false
+	for _, ext := range allowExts {
+		if ext == fileExt {
+			allowFlag = true
+			break
+		}
+	}
+	if !allowFlag {
+		return "", errors.New("只允许jpg、png、jpeg、gif格式的图片")
+	}
 	// 此处重命名文件 取此时的时间戳为MD5为上传OSS的文件名
 	data := []byte(time.Now().String())
 	md5FileName := fmt.Sprintf("%x", md5.Sum(data))
