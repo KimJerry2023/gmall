@@ -35,6 +35,13 @@ func NewRouter() *gin.Engine {
 			// 用户操作
 			authed.PUT("user", api.UserUpdate)
 			authed.POST("avatar", api.UploadAvatar)
+
+			// 收货地址操作
+			authed.POST("addresses", api.CreateAddress)
+			authed.GET("addresses/:id", api.GetAddress)
+			authed.GET("addresses", api.ListAddress)
+			authed.PUT("addresses/:id", api.UpdateAddress)
+			authed.DELETE("addresses/:id", api.DeleteAddress)
 		}
 	}
 	return r

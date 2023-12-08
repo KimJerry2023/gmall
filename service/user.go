@@ -139,6 +139,7 @@ func (service *UserService) Post(c context.Context, uId uint, file *multipart.Fi
 			Error:  err.Error(),
 		}
 	}
+
 	path, err := utils.OssUpload(file)
 	if err != nil {
 		code = e.ErrorUploadFile
