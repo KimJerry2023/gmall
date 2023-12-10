@@ -25,6 +25,11 @@ var (
 	SecretKey string
 	Bucket    string
 	Endpoint  string
+
+	RedisDb     string
+	RedisAddr   string
+	RedisPw     string
+	RedisDbName string
 )
 
 func Init() {
@@ -36,6 +41,7 @@ func Init() {
 	LoadServer(file)
 	LoadMysqlData(file)
 	LoadAliyun(file)
+	LoadRedisData(file)
 	if err := LoadLocales("conf/locales/zh-cn.yaml"); err != nil {
 		panic(err)
 	}
@@ -61,4 +67,11 @@ func LoadAliyun(file *ini.File) {
 	SecretKey = file.Section("aliyun").Key("AccessSecret").String()
 	Bucket = file.Section("aliyun").Key("Bucket").String()
 	Endpoint = file.Section("aliyun").Key("Endpoint").String()
+}
+
+func LoadRedisData(file *ini.File) {
+	RedisDb = file.Section("redis").Key("RedisDb").String()
+	RedisAddr = file.Section("redis").Key("RedisAddr").String()
+	RedisPw = file.Section("redis").Key("RedisPw").String()
+	RedisDbName = file.Section("redis").Key("RedisDbName").String()
 }
