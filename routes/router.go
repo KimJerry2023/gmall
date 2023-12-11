@@ -26,8 +26,15 @@ func NewRouter() *gin.Engine {
 				Data:   "Go lang",
 			})
 		})
+		// 用户操作
 		v1.POST("user/register", api.UserRegister)
 		v1.POST("user/login", api.UserLogin)
+
+		// 商品操作
+		v1.GET("products", api.ListProducts)
+		v1.GET("product/:id", api.ShowProduct)
+		v1.POST("products", api.SearchProducts)
+		v1.GET("imgs/:id", api.ListProductImg)
 
 		authed := v1.Group("/") // 需要登录保护
 		authed.Use(middleware.JWT())
@@ -42,6 +49,11 @@ func NewRouter() *gin.Engine {
 			authed.GET("addresses", api.ListAddress)
 			authed.PUT("addresses/:id", api.UpdateAddress)
 			authed.DELETE("addresses/:id", api.DeleteAddress)
+
+			// 商品操作
+			authed.POST("product", api.CreateProduct)
+			authed.PUT("product/:id", api.UpdateProduct)
+			authed.DELETE("product/:id", api.DeleteProduct)
 		}
 	}
 	return r
